@@ -2,7 +2,7 @@
 
 Use this for `.apcp/state.md` or `.apcp/APCP_STATE.md`.
 
-APCP v0.3 keeps the v0.2 state profiles and adds lightweight checker/tooling. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
+APCP v0.3.2 keeps the v0.2 state profiles, adds lightweight checker/tooling, and expects root-goal plus context-budget metadata for substantial work. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
 
 APCP supports two profiles:
 
@@ -11,12 +11,18 @@ APCP supports two profiles:
 
 ## Compact spike profile
 
-Use this when the task is bounded and likely to close in one session or one worker run.
+Use this when the task is bounded and likely to close in one controller session or one Worker run.
 
 ```markdown
 # APCP State — <project/task>
 
 ## Baseline
+- rootGoal:
+- rootGoalStatus: proposed | locked | changed
+- rootGoalConfirmation:
+- contextWindowTokens: 200000
+- controllerContextPolicy:
+- workerContextPolicy:
 - goal:
 - successCriteria:
 - nonGoals:
@@ -34,7 +40,7 @@ Use this when the task is bounded and likely to close in one session or one work
 - artifactDelta:
 
 ## Task Graph
-| ID | Node | Status | Depends on | Acceptance | Evidence |
+| ID | Node | Status | Depends on | Owner/Worker | Context fit | Acceptance | Evidence |
 
 ## Validation Matrix
 | Command/check | Purpose | Result | Evidence | Notes |
@@ -65,6 +71,12 @@ Use this for substantial project work.
 # APCP State — <project>
 
 ## Baseline
+- rootGoal:
+- rootGoalStatus: proposed | locked | changed
+- rootGoalConfirmation:
+- contextWindowTokens: 200000
+- controllerContextPolicy:
+- workerContextPolicy:
 - northStar:
 - approvedObjective:
 - successCriteria:
@@ -84,13 +96,13 @@ Use this for substantial project work.
 ## Current Objective
 
 ## Task Graph
-| ID | Node | Status | Depends on | Owner | Acceptance | Evidence |
+| ID | Node | Status | Depends on | Owner/Worker | Context fit | Acceptance | Evidence |
 
 ## Dependency Graph
 | Source | Target | Type | Status | Reason |
 
 ## Active Work
-| ID | Node | Owner | Status | Conflict locks | Expected output | Checkpoint |
+| ID | Node | Owner/Worker | Status | Context budget | Conflict locks | Expected output | Checkpoint |
 
 ## Validation Matrix
 | Command/check | Purpose | Result | Evidence path | Notes |
@@ -151,6 +163,19 @@ The checker treats these as profile-critical signals:
 - active/needs-review work should have dated or otherwise meaningful checkpoints;
 - cleanup rows should have a clear Keep/Delete disposition and non-open status by closeout;
 - continuation summaries should surface active/blocked work, validation gaps, risks/issues/changes, cleanup signals, and next checkpoint.
+
+## Root goal and context rules
+
+For substantial work, always record:
+
+- a one-sentence `rootGoal`;
+- `rootGoalStatus` (`proposed`, `locked`, or `changed`);
+- `rootGoalConfirmation` (user confirmation or rationale when unambiguous);
+- `contextWindowTokens`, defaulting to `200000` unless the user/runtime specifies otherwise;
+- `controllerContextPolicy`, normally reserving controller context for goal/DAG/acceptance;
+- `workerContextPolicy`, normally sizing delegated packages to finish within one Worker context window.
+
+Use **Worker** as the generic role in state. Record concrete Worker type when useful, e.g. `sub-agent`, `native-codex-cli`, `script`, `human-review`, or `browser-tool`.
 
 ## Workspace baseline rules
 

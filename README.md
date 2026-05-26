@@ -31,4 +31,6 @@ node bin/apcp-check.js --root . --format json
 
 APCP makes the main assistant the controller-supervisor. The controller owns the root goal, task graph, workspace baseline, validation matrix, evidence ledger, and closeout. Workers, tools, and coding agents are scheduled resources.
 
-APCP now includes a **Root Goal Lock**: the top-level goal of the DAG should be clarified and locked before substantial work expands into lower-level tasks. Lower-level nodes can iterate; the root goal should only change with explicit user-facing confirmation.
+APCP includes a **Root Goal Lock**: the top-level goal of the DAG should be clarified and locked before substantial work expands into lower-level tasks. Lower-level nodes can iterate; the root goal should only change with explicit user-facing confirmation.
+
+APCP also uses portable **Worker** terminology: a Worker may be a sub-agent, coding agent, native executor/CLI, script, tool, or human reviewer. APCP does not require Codex, Claude Code, OpenClaw, or any specific runtime. It includes a default `contextWindowTokens` assumption of `200000`, overridable by the user or runtime, and recommends sizing delegated Worker packages to finish within one context window when practical.

@@ -1,9 +1,8 @@
 {
   "name": "apcp-skill",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Agentic Project Control Protocol skill and checker.",
-  "type": "module",
   "bin": {
     "apcp-check": "bin/apcp-check.js"
   },

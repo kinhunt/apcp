@@ -3,7 +3,11 @@
 ## Plan checkpoint
 
 ```text
-Goal:
+Root goal:
+Root goal status: proposed | locked | changed
+Context window tokens: 200000 | <override>
+Controller context policy:
+Worker context policy:
 Acceptance:
 Non-goals:
 Task graph:
@@ -17,7 +21,9 @@ Human gates:
 ## Compact spike checkpoint
 
 ```text
-Goal:
+Root goal:
+Root goal status:
+Context window tokens:
 Why this spike exists:
 Success criteria:
 Non-goals / forbidden moves:
@@ -38,16 +44,20 @@ Close condition:
 
 ```text
 Root goal:
+Root goal status:
 Parent linkage:
 Local goal:
 Acceptance criteria:
 Constraints / non-goals:
 Relevant files/areas:
+Worker type / invocation mode:
+Context budget / expected fit:
 Workspace baseline / protected areas:
 Secrets policy:
 Dependencies / blockers:
 Evidence required:
 Expected output:
+Report size / format:
 Changed files / artifact delta:
 Stop conditions:
 Infrastructure retry policy:
@@ -73,6 +83,8 @@ Recommended next action:
 
 ```text
 Worker/output:
+Worker type / invocation mode:
+Context budget respected? yes/no/unknown
 Acceptance criteria met? yes/no/partial
 Evidence sufficient? yes/no/partial
 Validation reviewed:
@@ -98,7 +110,8 @@ State updates required:
 ## Status checkpoint
 
 ```text
-Objective / baseline:
+Root goal / baseline:
+Context budget status:
 Completed since last checkpoint:
 Active work:
 Blocked / waiting:
@@ -143,7 +156,9 @@ Next step:
 ## Closure report
 
 ```text
-Goal:
+Root goal:
+Root goal status:
+Context budget outcome:
 Final status:
 Accepted deliverables:
 Changed files:

@@ -5,9 +5,9 @@ description: "Use APCP (Agentic Project Control Protocol) for substantial projec
 
 # APCP — Agentic Project Control Protocol
 
-Version: v0.3 stable. Current stable APCP practice is this skill plus its templates, state schema, and lightweight checker/tooling.
+Version: v0.3.2 stable. Current stable APCP practice is this skill plus its templates, state schema, and lightweight checker/tooling.
 
-APCP makes the main agent the project controller. Sub-agents, Codex, tools, and humans are scheduled resources. The controller owns goal, baseline, dependency graph, state, evidence, integration, change control, and user-facing synthesis.
+APCP makes the main agent the project controller. Workers are scheduled resources. A worker can be a sub-agent, coding agent, native executor/CLI, tool, script, or human. The controller owns goal, baseline, dependency graph, state, evidence, integration, change control, and user-facing synthesis.
 
 ## Quick loop
 
@@ -60,11 +60,12 @@ Avoid asking the user to choose between many technical approaches at the root-go
 2. State the goal, acceptance criteria, non-goals, and task graph before major work.
 3. Show the task graph/dependencies to the user when planning or materially replanning.
 4. Keep a project-local state artifact when work is meaningful: `.apcp/state.md` or `.apcp/APCP_STATE.md`.
-5. Delegate substantial coding to Codex by default when available; delegate bounded research/review to sub-agents when useful.
-6. Do not accept worker output without evidence and fit check.
-7. Distinguish task blockers from infrastructure blockers.
-8. Update state after accepted work, material plan changes, major decisions, new risks, and cleanup.
-9. Close with evidence, unresolved risks, deferred work, cleanup status, and next recommended step.
+5. Choose an appropriate Worker invocation mode (sub-agent, native executor, tool/script, coding agent, or human) based on context isolation, tool fit, evidence quality, and safety.
+6. Delegate substantial execution when useful, while keeping the controller focused on root goal, DAG management, and acceptance.
+7. Do not accept Worker output without evidence and fit check.
+8. Distinguish task blockers from infrastructure blockers.
+9. Update state after accepted work, material plan changes, major decisions, new risks, and cleanup.
+10. Close with evidence, unresolved risks, deferred work, cleanup status, and next recommended step.
 
 
 ## Profile selection
@@ -77,15 +78,67 @@ Always include a **Workspace Baseline** before editing repos: repo roots, dirty 
 
 Always include a **Validation Matrix** when commands/checks matter: command/check, purpose, result, evidence path, notes.
 
-For substantial work, APCP state should include a root-goal field such as:
+For substantial work, APCP state should include root-goal and context fields such as:
 
 ```markdown
 - rootGoal: <one short outcome-oriented sentence>
 - rootGoalStatus: proposed | locked | changed
 - rootGoalConfirmation: <user message, timestamp, or controller rationale if unambiguous>
+- contextWindowTokens: 200000 | <runtime/user-specified value>
+- controllerContextPolicy: reserve controller context for goal/DAG/acceptance; delegate execution details when useful
+- workerContextPolicy: size Worker packages to finish within one context window when practical
 ```
 
 If `rootGoalStatus` changes from `locked` to `changed`, record the user-facing rationale and confirmation before proceeding.
+
+## Worker Model and Invocation Modes
+
+APCP uses **Worker** as the portable term for any delegated execution resource.
+
+- **Worker**: generic delegated resource that performs a bounded work package and reports evidence.
+- **Sub-agent**: a Worker running as a separate agent/session with its own context window.
+- **Executor/native client**: a Worker invoked through a CLI, SDK, script, or tool surface, such as a coding agent's native client.
+- **Human**: a Worker only when explicitly assigned a decision, review, approval, or external action.
+
+APCP does not require Codex, Claude Code, OpenClaw, or any specific coding agent. Coding agents are optional Worker implementations.
+
+### Choosing an invocation mode
+
+Prefer a **Sub-agent Worker** when:
+
+- context isolation is valuable;
+- the work is exploratory, research-heavy, or review-heavy;
+- the Worker should reason independently and return a synthesized report;
+- parallel non-conflicting work packages are useful;
+- the controller must preserve its context for goal management and acceptance.
+
+Prefer a **native executor / coding-agent client Worker** when:
+
+- the task is a focused implementation or validation slice;
+- the native client has better repo/tool integration, patching, test-running, or sandbox controls;
+- lower orchestration overhead matters;
+- the output can be evaluated through files, diffs, logs, and tests rather than conversation state.
+
+The controller should pick the mode that best preserves root-goal control, context budget, evidence quality, and safety boundaries. Record the chosen Worker type for substantial delegated nodes.
+
+## Context Window Budget
+
+APCP treats context window as a scarce project resource. The controller should conserve its own context for root-goal management, DAG coordination, decisions, and acceptance reviews; detailed execution should be delegated when useful.
+
+Default assumptions when the runtime does not specify a limit:
+
+- `contextWindowTokens`: 200000
+- target each Worker package to fit in one context window without compaction;
+- keep delegated packets small and evidence-oriented;
+- prefer fewer, well-scoped Workers over many tiny Workers that increase integration load.
+
+Users or runtimes may override the context window. If the effective budget is smaller, split work more aggressively and require tighter reports.
+
+### Context-aware work packaging
+
+Before assigning a Worker package, estimate whether it can complete within one context window. If not, split the package by artifact boundary, dependency boundary, or validation boundary. Avoid assigning work that is likely to compact mid-task unless the Worker has a durable state handoff.
+
+A good Worker packet includes only the context needed to complete the local goal: root-goal summary, parent linkage, acceptance criteria, constraints, relevant files/areas, evidence required, stop conditions, and context budget. Do not dump the controller's full history into Workers by default.
 
 ## v0.3 checker/tooling
 
@@ -105,7 +158,8 @@ A task is ready only if it has:
 - one-sentence objective;
 - acceptance criteria;
 - dependencies/blockers;
-- owner;
+- owner / Worker type where delegated;
+- context-window estimate and fit check for delegated work;
 - evidence required;
 - conflict/resource check;
 - stop conditions;
@@ -146,7 +200,9 @@ If provider/tool/network/sandbox/approval/CLI fails, record exact evidence, retr
 - `v0`: archived conceptual draft.
 - `v0.1`: prior stable workspace practice: controller, DAG, delegation, evidence, and project-local `.apcp` artifacts.
 - `v0.2`: prior stable Skill practice: compact/full state profiles, explicit Workspace Baseline, Validation Matrix, `secretsPolicy`, `changedFiles`, and `artifactDelta`.
-- `v0.3`: current stable practice: v0.2 compatibility plus lightweight checker/tooling for required headings, stale work, missing evidence, cleanup drift, and continuation summaries.
+- `v0.3`: prior stable practice: v0.2 compatibility plus lightweight checker/tooling for required headings, stale work, missing evidence, cleanup drift, and continuation summaries.
+- `v0.3.1`: prior stable practice: adds Root Goal Lock, portable Worker terminology, invocation-mode guidance, and context-window budgeting.
+- `v0.3.2`: current stable practice: clarifies default context window budget as 200000 tokens and keeps it user/runtime-overridable.
 
 ## References
 
