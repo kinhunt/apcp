@@ -134,6 +134,16 @@ Default assumptions when the runtime does not specify a limit:
 
 Users or runtimes may override the context window. If the effective budget is smaller, split work more aggressively and require tighter reports.
 
+### Context preservation discipline
+
+Treat controller context as a strategic control surface, not a raw evidence store.
+
+- Keep the controller focused on root goal, DAG, decisions, risks, integration, and acceptance.
+- Workers may collect raw evidence, but should return concise reports, evidence indexes, and artifact paths by default.
+- Large logs, event streams, transcripts, DOM/screenshot metadata, diffs, generated outputs, and search corpora should stay in files or artifacts unless needed for acceptance.
+- The controller should read Worker summaries first and fetch raw evidence only for ambiguity, dispute, debugging, or acceptance failure.
+- If a Worker is likely to compact before finishing, split the task or require a durable checkpoint artifact before continuing.
+
 ### Context-aware work packaging
 
 Before assigning a Worker package, estimate whether it can complete within one context window. If not, split the package by artifact boundary, dependency boundary, or validation boundary. Avoid assigning work that is likely to compact mid-task unless the Worker has a durable state handoff.
