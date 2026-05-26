@@ -138,11 +138,18 @@ Users or runtimes may override the context window. If the effective budget is sm
 
 Treat controller context as a strategic control surface, not a raw evidence store.
 
-- Keep the controller focused on root goal, DAG, decisions, risks, integration, and acceptance.
-- Workers may collect raw evidence, but should return concise reports, evidence indexes, and artifact paths by default.
-- Large logs, event streams, transcripts, DOM/screenshot metadata, diffs, generated outputs, and search corpora should stay in files or artifacts unless needed for acceptance.
-- The controller should read Worker summaries first and fetch raw evidence only for ambiguity, dispute, debugging, or acceptance failure.
-- If a Worker is likely to compact before finishing, split the task or require a durable checkpoint artifact before continuing.
+Default posture: the controller should preserve its context for root goal, DAG, decisions, risks, integration, acceptance, and human-facing synthesis. Delegate context-heavy execution whenever practical, not only implementation.
+
+Delegate or isolate work when it may produce large intermediate context, including:
+
+- browser automation, UI exploration, screenshots, DOM/A2UI trees, and multi-step login/session recovery;
+- broad research, search result triage, document/PDF sweeps, or source-code archaeology;
+- long test runs, CI/log analysis, flaky-test investigation, benchmark output, or generated diffs;
+- event streams, transcripts, telemetry, database dumps, and large command outputs.
+
+Worker reports should be compact by default: outcome, changed artifacts, evidence index, validation result, risks, and the smallest excerpts needed for acceptance. Raw logs, screenshots, traces, generated outputs, and search corpora should stay in files/artifacts unless the controller needs them for ambiguity, dispute, debugging, safety review, or acceptance failure.
+
+The controller may still perform small inspections, focused edits, and lightweight validation directly when that is cheaper than delegation. If a Worker or browser session is likely to compact before finishing, split the task or require a durable checkpoint artifact before continuing.
 
 ### Context-aware work packaging
 
