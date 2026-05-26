@@ -8,6 +8,7 @@ Root goal status: proposed | locked | changed
 Context window tokens: 200000 | <override>
 Controller context policy:
 Worker context policy:
+Active-run pointer:
 Acceptance:
 Non-goals:
 Task graph:
@@ -52,6 +53,7 @@ Constraints / non-goals:
 Relevant files/areas:
 Worker type / invocation mode:
 Context budget / expected fit:
+Active-run pointer / state path:
 Workspace baseline / protected areas:
 Secrets policy:
 Dependencies / blockers:
@@ -61,6 +63,24 @@ Report size / format:
 Changed files / artifact delta:
 Stop conditions:
 Infrastructure retry policy:
+```
+
+
+## Active-run pointer
+
+```text
+Status: active | blocked | needs-review | closed
+Project:
+Project root:
+State path:
+Project handoff path:
+Root goal:
+Current graph node:
+Worker label/session/run id:
+Expected report/evidence:
+Safety constraints:
+Heartbeat instructions:
+Closeout rule:
 ```
 
 ## Upward report

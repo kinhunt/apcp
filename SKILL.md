@@ -5,7 +5,7 @@ description: "Use APCP (Agentic Project Control Protocol) for substantial projec
 
 # APCP — Agentic Project Control Protocol
 
-Version: v0.3.2 stable. Current stable APCP practice is this skill plus its templates, state schema, and lightweight checker/tooling.
+Version: v0.3.3 stable. Current stable APCP practice is this skill plus its templates, state schema, active-run handoff pointers, and lightweight checker/tooling.
 
 APCP makes the main agent the project controller. Workers are scheduled resources. A worker can be a sub-agent, coding agent, native executor/CLI, tool, script, or human. The controller owns goal, baseline, dependency graph, state, evidence, integration, change control, and user-facing synthesis.
 
@@ -60,12 +60,13 @@ Avoid asking the user to choose between many technical approaches at the root-go
 2. State the goal, acceptance criteria, non-goals, and task graph before major work.
 3. Show the task graph/dependencies to the user when planning or materially replanning.
 4. Keep a project-local state artifact when work is meaningful: `.apcp/state.md` or `.apcp/APCP_STATE.md`.
-5. Choose an appropriate Worker invocation mode (sub-agent, native executor, tool/script, coding agent, or human) based on context isolation, tool fit, evidence quality, and safety.
-6. Delegate substantial execution when useful, while keeping the controller focused on root goal, DAG management, and acceptance.
-7. Do not accept Worker output without evidence and fit check.
-8. Distinguish task blockers from infrastructure blockers.
-9. Update state after accepted work, material plan changes, major decisions, new risks, and cleanup.
-10. Close with evidence, unresolved risks, deferred work, cleanup status, and next recommended step.
+5. For long-running, heartbeat-monitored, or multi-project workspace work, create an active-run pointer before delegation: project-local `.apcp/current-run.md`, and when the workspace may contain multiple projects, a workspace-level `.apcp/current-run.md` that points to the active project/state/Worker.
+6. Choose an appropriate Worker invocation mode (sub-agent, native executor, tool/script, coding agent, or human) based on context isolation, tool fit, evidence quality, and safety.
+7. Delegate substantial execution when useful, while keeping the controller focused on root goal, DAG management, and acceptance.
+8. Do not accept Worker output without evidence and fit check.
+9. Distinguish task blockers from infrastructure blockers.
+10. Update state and active-run pointers after accepted work, material plan changes, Worker launches/completions, new risks, cleanup, and closeout.
+11. Close with evidence, unresolved risks, deferred work, cleanup status, next recommended step, and mark active-run pointers closed or remove them.
 
 
 ## Profile selection
@@ -90,6 +91,25 @@ For substantial work, APCP state should include root-goal and context fields suc
 ```
 
 If `rootGoalStatus` changes from `locked` to `changed`, record the user-facing rationale and confirmation before proceeding.
+
+## Active-run pointers and heartbeat reconciliation
+
+APCP must not rely on a heartbeat or future controller to infer active work by scanning every `.apcp` directory. Historical reports, stale project states, and multiple repos can coexist in one workspace.
+
+When a task may outlive the current turn, use Workers, or need heartbeat reconciliation, create an explicit handoff pointer before launching work:
+
+- project-local pointer: `<projectRoot>/.apcp/current-run.md`;
+- workspace-level pointer: `<workspaceRoot>/.apcp/current-run.md` when more than one project or APCP artifact tree may exist.
+
+The pointer should include: status, project name/root, canonical state path, root goal, current task graph node, Worker label/session/run id when known, expected report/evidence paths, safety constraints, heartbeat instructions, and closeout/cleanup rule.
+
+Heartbeat policy:
+
+- follow the active-run pointer first; do not guess from arbitrary `.apcp` folders;
+- if no clear pointer exists, do not invent work—report no actionable APCP state or stay silent according to the runtime policy;
+- use the recorded Worker label/session for at most one status lookup unless the user asks for deeper inspection;
+- treat `done` Worker status as ready for controller review, not automatically accepted;
+- after closeout, mark the pointer `closed` or remove it so future heartbeats do not resurrect stale work.
 
 ## Worker Model and Invocation Modes
 
@@ -219,7 +239,8 @@ If provider/tool/network/sandbox/approval/CLI fails, record exact evidence, retr
 - `v0.2`: prior stable Skill practice: compact/full state profiles, explicit Workspace Baseline, Validation Matrix, `secretsPolicy`, `changedFiles`, and `artifactDelta`.
 - `v0.3`: prior stable practice: v0.2 compatibility plus lightweight checker/tooling for required headings, stale work, missing evidence, cleanup drift, and continuation summaries.
 - `v0.3.1`: prior stable practice: adds Root Goal Lock, portable Worker terminology, invocation-mode guidance, and context-window budgeting.
-- `v0.3.2`: current stable practice: clarifies default context window budget as 200000 tokens and keeps it user/runtime-overridable.
+- `v0.3.2`: prior stable practice: clarifies default context window budget as 200000 tokens and keeps it user/runtime-overridable.
+- `v0.3.3`: current stable practice: adds active-run pointers and heartbeat reconciliation rules so controllers do not infer active work from stale APCP artifacts.
 
 ## References
 

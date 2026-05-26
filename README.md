@@ -34,3 +34,5 @@ APCP makes the main assistant the controller-supervisor. The controller owns the
 APCP includes a **Root Goal Lock**: the top-level goal of the DAG should be clarified and locked before substantial work expands into lower-level tasks. Lower-level nodes can iterate; the root goal should only change with explicit user-facing confirmation.
 
 APCP also uses portable **Worker** terminology: a Worker may be a sub-agent, coding agent, native executor/CLI, script, tool, or human reviewer. APCP does not require Codex, Claude Code, OpenClaw, or any specific runtime. It includes a default `contextWindowTokens` assumption of `200000`, overridable by the user or runtime, and recommends sizing delegated Worker packages to finish within one context window when practical.
+
+APCP also uses explicit **active-run pointers** (`.apcp/current-run.md`) for tasks that outlive a turn, launch Workers, or rely on heartbeat reconciliation. In multi-project workspaces, add a workspace-level pointer that names the active project/state instead of letting heartbeats guess from historical `.apcp` artifacts.

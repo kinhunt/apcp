@@ -2,7 +2,7 @@
 
 Use this for `.apcp/state.md` or `.apcp/APCP_STATE.md`.
 
-APCP v0.3.2 keeps the v0.2 state profiles, adds lightweight checker/tooling, and expects root-goal plus context-budget metadata for substantial work. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
+APCP v0.3.3 keeps the v0.2 state profiles, adds lightweight checker/tooling, and expects root-goal, context-budget metadata, and active-run pointers for substantial or heartbeat-monitored work. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
 
 APCP supports two profiles:
 
@@ -23,6 +23,7 @@ Use this when the task is bounded and likely to close in one controller session 
 - contextWindowTokens: 200000
 - controllerContextPolicy:
 - workerContextPolicy:
+- activeRunPointer: `.apcp/current-run.md` | none
 - goal:
 - successCriteria:
 - nonGoals:
@@ -77,6 +78,7 @@ Use this for substantial project work.
 - contextWindowTokens: 200000
 - controllerContextPolicy:
 - workerContextPolicy:
+- activeRunPointer: `.apcp/current-run.md` | <workspace pointer path> | none
 - northStar:
 - approvedObjective:
 - successCriteria:
@@ -176,6 +178,37 @@ For substantial work, always record:
 - `workerContextPolicy`, normally sizing delegated packages to finish within one Worker context window.
 
 Use **Worker** as the generic role in state. Record concrete Worker type when useful, e.g. `sub-agent`, `native-codex-cli`, `script`, `human-review`, or `browser-tool`.
+
+## Active-run pointer schema
+
+Use `.apcp/current-run.md` when work may continue across turns, Workers, heartbeats, or multiple projects. In a workspace containing several projects or APCP histories, also create a workspace-level pointer that points to the active project pointer/state.
+
+Recommended fields:
+
+```markdown
+# Current APCP Run
+- status: active | blocked | needs-review | closed
+- project:
+- projectRoot:
+- state:
+- projectHandoff:
+- rootGoal:
+- currentNode:
+- workerLabel:
+- workerSessionKey:
+- workerRunId:
+- expectedReport:
+- expectedEvidence:
+- safetyConstraints:
+- heartbeatInstructions:
+- closeoutRule:
+```
+
+Pointer rules:
+
+- A heartbeat follows the pointer; it does not scan arbitrary `.apcp` trees to infer current work.
+- Update the pointer when launching/replacing Workers, changing the active node, blocking, accepting, or closing work.
+- Mark `status: closed` or remove the pointer after closeout.
 
 ## Workspace baseline rules
 
