@@ -1,0 +1,12 @@
+# Current APCP Run
+- status: active
+- project: Watch Active Missing Fixture
+- projectRoot: .
+- state: .apcp/state.md
+- rootGoal: Demonstrate active pointer with pending worker artifact.
+- currentNode: A
+- workerLabel: Worker fixture session run id wf-missing-001
+- expectedReport: .apcp/reports/worker-report.md
+- expectedEvidence: .apcp/evidence/validation.txt
+- heartbeatInstructions: Controller checks for expected artifacts before review.
+- closeoutRule: Controller reviews evidence before accepting.

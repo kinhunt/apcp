@@ -5,7 +5,7 @@ description: "Use APCP (Agentic Project Control Protocol) for substantial projec
 
 # APCP — Agentic Project Control Protocol
 
-Version: v0.3.3 stable. Current stable APCP practice is this skill plus its templates, state schema, active-run handoff pointers, and lightweight checker/tooling.
+Version: v0.3.5 stable. Current stable APCP practice is this skill plus its templates, state schema, active-run handoff pointers, lightweight checker/tooling, and an optional coordination watchdog.
 
 APCP makes the main agent the project controller. Workers are scheduled resources. A worker can be a sub-agent, coding agent, native executor/CLI, tool, script, or human. The controller owns goal, baseline, dependency graph, state, evidence, integration, change control, and user-facing synthesis.
 
@@ -66,8 +66,18 @@ Avoid asking the user to choose between many technical approaches at the root-go
 8. Do not accept Worker output without evidence and fit check.
 9. Distinguish task blockers from infrastructure blockers.
 10. Update state and active-run pointers after accepted work, material plan changes, Worker launches/completions, new risks, cleanup, and closeout.
-11. Close with evidence, unresolved risks, deferred work, cleanup status, next recommended step, and mark active-run pointers closed or remove them.
+11. After every Worker completion/reject/needs-revision decision, run the Post-Worker Integration Loop before pausing: record evidence and root-goal fit, update the node and dependencies, then either create/activate the next ready/retry/revision node, link a blocker/deferred rationale, or record a closeout exception when the root goal is already finished.
+12. Close with evidence, unresolved risks, deferred work, cleanup status, next recommended step, and mark active-run pointers closed or remove them.
 
+## Post-Worker Integration Loop
+
+This loop is mandatory after Worker output is accepted, rejected, partially accepted, or marked `needs-revision`. The controller must not stop at “review done” while the locked root goal remains unfinished.
+
+1. Record the review decision with evidence, reason, and root-goal/non-goal fit.
+2. Update the DAG node status and the dependency graph delta, including newly blocked, unblocked, replaced, or deferred edges.
+3. If the root goal is unfinished, create or activate a next node: retry, replacement, revision, downstream integration, validation, or explicit blocker resolution.
+4. Update `.apcp/current-run.md` to the new current node/owner/trigger, or mark it blocked/closed with a concrete rationale.
+5. Only pause after state contains a continuation decision: next active/ready node, linked blocker/deferred rationale, or closeout exception.
 
 ## Profile selection
 
@@ -103,12 +113,26 @@ When a task may outlive the current turn, use Workers, or need heartbeat reconci
 
 The pointer should include: status, project name/root, canonical state path, root goal, current task graph node, Worker label/session/run id when known, expected report/evidence paths, safety constraints, heartbeat instructions, and closeout/cleanup rule.
 
+When the Worker is a native executor / command / coding-agent client, the pointer must be durable enough for a future controller or heartbeat to recover without relying on transient chat context. Record, when available:
+
+- Worker type: `sub-agent`, `native-executor`, `coding-agent-client`, `tool-script`, or `human`;
+- command/session id/process id/run id and the owning tool surface (`exec`, `process`, Codex, script, CI, etc.);
+- working directory and bounded command purpose, without secrets or full env dumps;
+- expected completion signal: background exec completion event, process status, report file, diff, log path, test output, or external status URL;
+- expected artifact/report paths that survive compaction or heartbeat turns;
+- review trigger: exactly which status or artifact means “ready for controller review”;
+- stale/timeout policy: when to inspect once, retry, mark infrastructure-blocked, or ask the user.
+
 Heartbeat policy:
 
 - follow the active-run pointer first; do not guess from arbitrary `.apcp` folders;
 - if no clear pointer exists, do not invent work—report no actionable APCP state or stay silent according to the runtime policy;
-- use the recorded Worker label/session for at most one status lookup unless the user asks for deeper inspection;
-- treat `done` Worker status as ready for controller review, not automatically accepted;
+- use the recorded Worker label/session/process/run id for at most one status lookup unless the user asks for deeper inspection;
+- for Sub-agent Workers, inspect the recorded session/report when the session is `done`, `timeout`, or missing an expected completion push;
+- for native executor / command Workers, inspect the recorded process session once with `process`, or inspect durable report/log/diff/test artifacts if the process registry is gone;
+- treat `done`, `completed`, successful command exit, or report-created status as ready for controller review, not automatically accepted;
+- if a native executor's transient process state is lost but expected artifacts exist, continue from artifacts and run focused validation instead of abandoning the DAG;
+- if both process state and required artifacts are missing, mark the node `infrastructure_blocked` or `needs-retry` in project state and retry only with a narrower bounded package;
 - after closeout, mark the pointer `closed` or remove it so future heartbeats do not resurrect stale work.
 
 ## Worker Model and Invocation Modes
@@ -138,6 +162,8 @@ Prefer a **native executor / coding-agent client Worker** when:
 - the native client has better repo/tool integration, patching, test-running, or sandbox controls;
 - lower orchestration overhead matters;
 - the output can be evaluated through files, diffs, logs, and tests rather than conversation state.
+
+Native executor / command Workers require stronger durable handoff than Sub-agent Workers because their primary completion channel may be a transient process registry plus a heartbeat event, not a preserved conversation. For substantial work, the controller must require the executor to write a compact report or produce named artifacts before considering the delegation recoverable. Do not rely only on a PID, terminal tail, or model memory.
 
 The controller should pick the mode that best preserves root-goal control, context budget, evidence quality, and safety boundaries. Record the chosen Worker type for substantial delegated nodes.
 
@@ -177,6 +203,20 @@ Before assigning a Worker package, estimate whether it can complete within one c
 
 A good Worker packet includes only the context needed to complete the local goal: root-goal summary, parent linkage, acceptance criteria, constraints, relevant files/areas, evidence required, stop conditions, and context budget. Do not dump the controller's full history into Workers by default.
 
+
+## Optional coordination watchdog
+
+`apcp-watch` is a conservative support tool for heartbeat/reconciliation checks. It reads only the active-run pointer and referenced APCP state, verifies recoverability fields, and checks whether expected report/evidence artifact paths exist. It never executes Worker commands, never reads secret/env-like files, never accepts work, and never mutates project state unless the controller explicitly passes a safe `--write-report` path for a compact markdown reconciliation report.
+
+Use it as advisory input, not authority:
+
+```bash
+node .agents/skills/apcp/bin/apcp-watch.js --root .
+node .agents/skills/apcp/bin/apcp-watch.js --pointer .apcp/current-run.md --format json
+```
+
+Statuses are `closed`, `no-pointer`, `active`, `blocked`, `infrastructure-blocked`, `needs-retry`, `ready-for-controller-review`, and `review-recorded-needs-continuation` when state shows a rejected/needs-revision current node without continuation. The controller still owns review, acceptance, and state updates.
+
 ## v0.3 checker/tooling
 
 APCP v0.3 adds a local checker for common control drift. When a project has an APCP state file and the tool is available, run it before major handoff, compaction, or closeout:
@@ -186,7 +226,7 @@ node .agents/skills/apcp/bin/apcp-check.js --state .apcp/state.md --continuation
 node .agents/skills/apcp/bin/apcp-check.js --root . --format json
 ```
 
-The checker validates required state headings, accepted work without evidence, stale active work/checkpoints, open cleanup drift, and can emit a compact continuation summary. Treat checker errors as blockers for closeout unless a controller records a justified exception.
+The checker validates required state headings, accepted work without evidence, rejected/needs-revision rows without evidence or continuation, stale active work/checkpoints, open cleanup drift, and can emit a compact continuation summary. Treat checker errors as blockers for closeout unless a controller records a justified exception.
 
 ## Work package readiness gate
 
@@ -240,7 +280,9 @@ If provider/tool/network/sandbox/approval/CLI fails, record exact evidence, retr
 - `v0.3`: prior stable practice: v0.2 compatibility plus lightweight checker/tooling for required headings, stale work, missing evidence, cleanup drift, and continuation summaries.
 - `v0.3.1`: prior stable practice: adds Root Goal Lock, portable Worker terminology, invocation-mode guidance, and context-window budgeting.
 - `v0.3.2`: prior stable practice: clarifies default context window budget as 200000 tokens and keeps it user/runtime-overridable.
-- `v0.3.3`: current stable practice: adds active-run pointers and heartbeat reconciliation rules so controllers do not infer active work from stale APCP artifacts.
+- `v0.3.3`: prior stable practice: adds active-run pointers and heartbeat reconciliation rules so controllers do not infer active work from stale APCP artifacts.
+- `v0.3.4`: prior stable practice: strengthens native executor / command Worker recoverability, durable completion artifacts, and heartbeat reconciliation after transient process state loss.
+- `v0.3.5`: current stable practice: requires Post-Worker Integration Loop continuation after rejected/needs-revision reviews and teaches checker/watchdog to surface review-recorded-but-uncontinued states.
 
 ## References
 

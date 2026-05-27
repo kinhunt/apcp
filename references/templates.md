@@ -12,6 +12,11 @@ Active-run pointer:
 Acceptance:
 Non-goals:
 Task graph:
+DAG delta:
+Dependency delta:
+Continuation decision: continue | retry | revise | replace | block | defer | closeout-exception
+Next node / owner / trigger:
+Pointer update:
 - A. ... [status] depends on ...
 Critical path:
 Parallelizable:
@@ -52,6 +57,10 @@ Acceptance criteria:
 Constraints / non-goals:
 Relevant files/areas:
 Worker type / invocation mode:
+Process/session/run id or missing-id rationale:
+Expected durable artifacts/report/evidence:
+Review trigger:
+Stale/timeout policy:
 Context budget / expected fit:
 Active-run pointer / state path:
 Workspace baseline / protected areas:
@@ -77,7 +86,11 @@ Project handoff path:
 Root goal:
 Current graph node:
 Worker label/session/run id:
+Worker type / invocation mode:
+Process/session/run id or missing-id rationale:
 Expected report/evidence:
+Review trigger:
+Stale/timeout policy:
 Safety constraints:
 Heartbeat instructions:
 Closeout rule:
@@ -111,9 +124,30 @@ Validation reviewed:
 Root-goal fit:
 Workspace/artifact hygiene:
 Risks/issues/changes:
-Dependency updates:
+DAG delta:
+Dependency delta:
 Decision: accepted | rejected | needs-revision | partially-accepted
+Continuation decision: next-node | retry | replacement | revision | blocker | deferred | closeout-exception
+Next node / owner / trigger:
+Pointer update:
 Revision instructions if needed:
+```
+
+## Worker rejection packet
+
+```text
+Rejected node / Worker:
+Decision: rejected | needs-revision
+Evidence reviewed:
+Reason / acceptance gap:
+Root-goal fit:
+DAG delta:
+Dependency delta:
+Continuation decision: retry | replacement | revision | blocker | deferred | closeout-exception
+Next node / owner / trigger:
+Pointer update:
+Worker-facing revision/retry instructions:
+Controller blocker/deferred rationale if no next node:
 ```
 
 ## Change request
@@ -136,6 +170,11 @@ Completed since last checkpoint:
 Active work:
 Blocked / waiting:
 Decisions made:
+DAG delta:
+Dependency delta:
+Continuation decision:
+Next node / owner / trigger:
+Pointer update:
 Change requests:
 Evidence status:
 Validation status:
@@ -144,6 +183,18 @@ Artifact hygiene / cleanup:
 Variance signals:
 Next actions:
 Human asks:
+```
+
+## APCP watchdog reconciliation
+
+```text
+Command:
+Pointer/root:
+Status: closed | no-pointer | active | blocked | infrastructure-blocked | needs-retry | ready-for-controller-review
+Expected artifacts:
+Findings:
+Controller decision: review | retry | wait | mark blocked | close
+Notes: Watchdog is advisory only; controller remains authority.
 ```
 
 ## v0.3 checker checkpoint
@@ -186,6 +237,7 @@ Artifact delta:
 Evidence:
 Validation matrix:
 Cleanup status:
+Deferred/skipped/justified validation or cleanup rows:
 Unresolved risks/gaps:
 Deferred work:
 Retrospective notes:

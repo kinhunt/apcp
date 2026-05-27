@@ -1,0 +1,12 @@
+# Current APCP Run
+- status: active
+- project: Watch Rejected Fixture
+- projectRoot: .
+- state: .apcp/state.md
+- rootGoal: Demonstrate watchdog review continuation classification.
+- currentNode: A
+- workerLabel: Worker fixture session run id wf-rejected-001
+- expectedReport: .apcp/reports/worker-report.md
+- expectedEvidence: .apcp/reports/worker-report.md
+- heartbeatInstructions: Controller checks state for continuation after review.
+- closeoutRule: Controller must create retry/revision/blocker before pausing.

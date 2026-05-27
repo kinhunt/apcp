@@ -2,7 +2,7 @@
 
 Use this for `.apcp/state.md` or `.apcp/APCP_STATE.md`.
 
-APCP v0.3.3 keeps the v0.2 state profiles, adds lightweight checker/tooling, and expects root-goal, context-budget metadata, and active-run pointers for substantial or heartbeat-monitored work. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
+APCP v0.3.5 keeps the v0.2 state profiles, adds lightweight checker/tooling, expects root-goal, context-budget metadata, active-run pointers, and requires explicit continuation after Worker rejection or revision decisions. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
 
 APCP supports two profiles:
 
@@ -42,6 +42,9 @@ Use this when the task is bounded and likely to close in one controller session 
 
 ## Task Graph
 | ID | Node | Status | Depends on | Owner/Worker | Context fit | Acceptance | Evidence |
+
+## Integration Loop
+| Reviewed node | Decision | Evidence | Root-goal fit | DAG delta | Dependency delta | Continuation decision | Next node/owner/trigger | Pointer update |
 
 ## Validation Matrix
 | Command/check | Purpose | Result | Evidence | Notes |
@@ -103,6 +106,9 @@ Use this for substantial project work.
 ## Dependency Graph
 | Source | Target | Type | Status | Reason |
 
+## Integration Loop
+| Reviewed node | Decision | Evidence | Root-goal fit | DAG delta | Dependency delta | Continuation decision | Next node/owner/trigger | Pointer update |
+
 ## Active Work
 | ID | Node | Owner/Worker | Status | Context budget | Conflict locks | Expected output | Checkpoint |
 
@@ -161,9 +167,15 @@ node .agents/skills/apcp/bin/apcp-check.js --state .apcp/state.md --continuation
 The checker treats these as profile-critical signals:
 
 - required headings: `Baseline`, `Workspace Baseline`, `Task Graph`, `Validation Matrix`, `Evidence Ledger`, `Artifact Hygiene`/`Artifact Hygiene / Cleanup`, and `Closeout` or `Next Checkpoint`;
+- substantial/full states must include `rootGoal`, `rootGoalStatus`, `rootGoalConfirmation`, `contextWindowTokens`, `controllerContextPolicy`, and `workerContextPolicy` in `Baseline` or `Root Goal`; compact states may receive warnings when ambiguity is tolerable;
 - accepted/done task rows should cite concrete evidence;
+- rejected/needs-revision task rows must cite evidence and reason, then point to an active/ready retry/replacement/revision/next node, linked blocker/deferred rationale, or closeout exception;
+- non-closed states must not end immediately after a review decision without a continuation decision while the root goal remains unfinished;
 - active/needs-review work should have dated or otherwise meaningful checkpoints;
-- cleanup rows should have a clear Keep/Delete disposition and non-open status by closeout;
+- native executor / CLI / Codex / command Workers should record a process/session/run id or explicit missing-id rationale, expected durable artifacts/report/evidence, review trigger, and stale/timeout policy;
+- `apcp-watch` may be used as optional advisory reconciliation: it reads `.apcp/current-run.md` or `--pointer`, reads the referenced state when present, verifies pointer recoverability fields, checks expected report/evidence path existence relative to `projectRoot`, and may classify ready artifacts as `ready-for-controller-review` or rejected/needs-revision current nodes without continuation as `review-recorded-needs-continuation`; it never executes Worker commands or accepts work;
+- when `--root` is used and `.apcp/current-run.md` exists, the pointer must expose recoverable handoff fields; active pointers require active Worker fields while closed pointers only require closeout-safe fields;
+- closed/final/accepted closeouts must not leave validation rows pending/not-run or cleanup rows open unless notes explicitly defer, skip, justify, or approve the remainder;
 - continuation summaries should surface active/blocked work, validation gaps, risks/issues/changes, cleanup signals, and next checkpoint.
 
 ## Root goal and context rules
@@ -206,9 +218,16 @@ Recommended fields:
 
 Pointer rules:
 
+- Watchdog statuses are advisory: `closed`, `no-pointer`, `active`, `blocked`, `infrastructure-blocked`, `needs-retry`, `ready-for-controller-review`, and `review-recorded-needs-continuation`; only the controller can accept or close work.
+- Relative `projectRoot: .` means the directory containing the pointer's `.apcp`; other relative roots should be written relative to the command working directory or as absolute paths. The watchdog falls back to the pointer project directory when a relative value already names that suffix.
+
 - A heartbeat follows the pointer; it does not scan arbitrary `.apcp` trees to infer current work.
 - Update the pointer when launching/replacing Workers, changing the active node, blocking, accepting, or closing work.
 - Mark `status: closed` or remove the pointer after closeout.
+- Required pointer fields for any retained pointer: `Status`, `Project`, `Project root`, `State path`, `Root goal`, and `Closeout rule`.
+- Required active/blocked/needs-review fields: `Current graph node`, `Worker label/session/run id`, `Expected report/evidence`, and `Heartbeat instructions`.
+- Closed pointers do not need active Worker/session fields, but they must still identify the project, state, root goal, and closeout rule/outcome.
+- Native executor pointers must also name a process/session/run id or missing-id rationale, durable artifacts/report/evidence, review trigger, and stale/timeout policy.
 
 ## Workspace baseline rules
 

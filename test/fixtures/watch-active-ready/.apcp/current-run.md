@@ -1,0 +1,17 @@
+# Current APCP Run
+- status: active
+- project: Watch Active Ready Fixture
+- projectRoot: .
+- state: .apcp/state.md
+- rootGoal: Demonstrate native executor pointer readiness.
+- currentNode: A
+- workerLabel/session/run id: native-codex-cli session id fixture-run-001
+- worker type / invocation mode: native executor codex exec CLI
+- process/session/run id or missing-id rationale: session id fixture-run-001
+- expectedReport: .apcp/reports/worker-report.md
+- expectedEvidence: .apcp/evidence/validation.txt
+- expectedReportEvidence: .apcp/reports/worker-report.md .apcp/evidence/validation.txt
+- reviewTrigger: Expected report and evidence artifacts exist.
+- stale/timeout policy: Retry once after heartbeat timeout, then mark infrastructure_blocked if CLI is unavailable.
+- heartbeatInstructions: Controller checks expected artifacts without running worker commands.
+- closeoutRule: Controller must review and accept; watchdog is not authority.
