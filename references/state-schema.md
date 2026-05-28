@@ -2,7 +2,7 @@
 
 Use this for `.apcp/state.md` or `.apcp/APCP_STATE.md`.
 
-APCP v0.3.5 keeps the v0.2 state profiles, adds lightweight checker/tooling, expects root-goal, context-budget metadata, active-run pointers, and requires explicit continuation after Worker rejection or revision decisions. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
+APCP v0.4.0 keeps the v0.2 state profiles, adds lightweight checker/tooling, expects root-goal, context-budget metadata, active-run pointers, and requires explicit continuation after Worker rejection or revision decisions. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
 
 APCP supports two profiles:
 

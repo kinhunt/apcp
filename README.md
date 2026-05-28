@@ -1,38 +1,28 @@
 # APCP — Agentic Project Control Protocol
 
-APCP is an Agent Skill for controlling substantial agentic work: project planning, task DAGs, state tracking, delegation, validation evidence, and closeout hygiene.
+APCP is a portable controller/worker protocol for substantial agentic work: DAG goal management, Controller attention discipline, Worker delegation, durable state, evidence review, recovery, and closeout.
 
-The package is intentionally small:
+This repository is structured for MCP Skills / agent skill installation:
 
-- `SKILL.md` — the protocol and operating instructions
-- `bin/apcp-check.js` — lightweight APCP state checker
-- `references/state-schema.md` — state artifact schema
-- `references/templates.md` — controller/delegation/checkpoint templates
+- `SKILL.md` — runtime-neutral core protocol and navigation.
+- `references/runtime-openclaw.md` — OpenClaw runtime profile.
+- `references/state-schema.md` — APCP state artifact schema.
+- `references/templates.md` — Worker, checkpoint, integration, and closeout templates.
+- `bin/apcp-check.js` — lightweight state checker.
+- `bin/apcp-watch.js` — conservative recovery/watchdog helper.
 
-## Install as an Agent Skill
+## Runtime profiles
 
-Copy this directory into an agent skills path, for example:
+APCP separates the core protocol from runtime-specific behavior.
 
-```bash
-mkdir -p .agents/skills/apcp
-cp -R SKILL.md bin references .agents/skills/apcp/
-```
+- Core protocol: use a DAG to manage goals and keep the Controller focused on goal/state/evidence decisions.
+- Runtime profiles: adapt Controller/Worker mechanics to different agent tools.
 
-Then configure your agent runtime to load the `apcp` skill.
+Currently bundled profile: `openclaw`.
 
 ## Quick validation
 
 ```bash
-node bin/apcp-check.js --state path/to/.apcp/state.md --continuation
-node bin/apcp-check.js --root . --format json
+node bin/apcp-check.js --help
+node bin/apcp-watch.js --help
 ```
-
-## Core idea
-
-APCP makes the main assistant the controller-supervisor. The controller owns the root goal, task graph, workspace baseline, validation matrix, evidence ledger, and closeout. Workers, tools, and coding agents are scheduled resources.
-
-APCP includes a **Root Goal Lock**: the top-level goal of the DAG should be clarified and locked before substantial work expands into lower-level tasks. Lower-level nodes can iterate; the root goal should only change with explicit user-facing confirmation.
-
-APCP also uses portable **Worker** terminology: a Worker may be a sub-agent, coding agent, native executor/CLI, script, tool, or human reviewer. APCP does not require Codex, Claude Code, OpenClaw, or any specific runtime. It includes a default `contextWindowTokens` assumption of `200000`, overridable by the user or runtime, and recommends sizing delegated Worker packages to finish within one context window when practical.
-
-APCP also uses explicit **active-run pointers** (`.apcp/current-run.md`) for tasks that outlive a turn, launch Workers, or rely on heartbeat reconciliation. In multi-project workspaces, add a workspace-level pointer that names the active project/state instead of letting heartbeats guess from historical `.apcp` artifacts.
