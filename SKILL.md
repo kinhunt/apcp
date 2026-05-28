@@ -5,7 +5,7 @@ description: "Use APCP (Agentic Project Control Protocol) for substantial projec
 
 # APCP — Agentic Project Control Protocol
 
-Version: v0.4.0 stable.
+Version: v0.4.1 stable.
 
 APCP is a portable controller/worker protocol for keeping long-running work goal-directed, delegated, observable, evidence-backed, and recoverable.
 
@@ -69,6 +69,22 @@ A current-run pointer should include:
 - closeout/continuation decision.
 
 ## Core Worker packet contract
+
+APCP uses a small portable Worker taxonomy. The taxonomy is fixed enough for state/recovery to be machine-auditable, but each runtime may map these types to its own tools:
+
+- `implementation` — edits product/source artifacts or creates deliverables.
+- `validation` — runs tests, checks, audits, review, or evidence refresh.
+- `research` — gathers information, inventories code/docs, compares references.
+- `runtime-command` — long-running command, native executor, CI/job, or CLI client.
+- `human-gate` — user/operator decision, approval, credential, external resource, or risk acceptance.
+
+Concurrency is controlled by **conflict domain**, not by Worker type alone:
+
+- Default: at most one active write-capable `implementation` Worker per repo/worktree/conflict domain.
+- Read-only `research`/`validation` Workers may run in parallel when they do not mutate the same artifacts and their outputs have durable report paths.
+- `runtime-command` Workers count against the conflict domain they affect; a test-only command can run beside read-only work, but not beside unsafe overlapping writes.
+- `human-gate` can remain open while safe read-only work continues, but blocked decisions must not be bypassed.
+- The Controller must record active Workers and conflict domains in state/current-run before launching parallel work.
 
 Every delegated Worker gets:
 

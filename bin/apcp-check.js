@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.4.0';
+const VERSION = '0.4.1';
 const PLACEHOLDER_RE = /^(|[-—]|tbd|todo|none|null|n\/a|na|not-run|not run|missing|unknown)$/i;
 const DONE_RE = /\b(accepted|done|passed|complete|completed)\b/i;
 const REVIEW_REJECTED_RE = /\b(rejected|needs[- ]revision)\b/i;

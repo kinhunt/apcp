@@ -34,7 +34,11 @@ Implementation/product source changes should be delegated to Workers.
 
 - Use OpenClaw `sessions_spawn` / subagents for substantial research, review, validation, and controller-managed work.
 - For coding implementation Workers, instruct them to use Codex CLI per workspace policy when applicable.
-- Keep one primary implementation Worker active at a time unless tasks are read-only and non-conflicting.
+- Use the core Worker taxonomy in state/pointers: `implementation`, `validation`, `research`, `runtime-command`, `human-gate`.
+- Keep one write-capable `implementation` Worker active per repo/worktree/conflict domain.
+- Multiple read-only `research` or `validation` Workers may run in parallel when they have separate report/log artifacts and do not mutate shared files.
+- Treat long Codex/CLI/background commands as `runtime-command` Workers unless they are clearly wrapped by a higher-level `implementation` or `validation` Worker.
+- For each active Worker, record both its type and its OpenClaw identity: subagent label/session key, exec/process id, or human gate owner.
 - Prefer narrower retry packages after worker loss or missing artifacts.
 
 ## Current-run pointers
@@ -53,6 +57,7 @@ Pointers should agree with the state closeout and include:
 - root goal and root-goal status;
 - last accepted node;
 - active Worker type/label/session/run/process id when available;
+- conflict domain when more than one Worker may be active;
 - expected report/log paths;
 - review trigger;
 - stale policy;

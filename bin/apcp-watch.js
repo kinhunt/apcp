@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION = '0.4.0-watch';
+const VERSION = '0.4.1-watch';
 const PLACEHOLDER_RE = /^(|[-—]|tbd|todo|none|null|n\/a|na|not-run|not run|missing|unknown)$/i;
 const CLOSED_RE = /\b(closed|complete|completed|done|accepted|final)\b/i;
 const BLOCKED_RE = /\b(blocked)\b/i;

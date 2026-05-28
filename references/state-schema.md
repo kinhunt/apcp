@@ -2,7 +2,7 @@
 
 Use this for `.apcp/state.md` or `.apcp/APCP_STATE.md`.
 
-APCP v0.4.0 keeps the v0.2 state profiles, adds lightweight checker/tooling, expects root-goal, context-budget metadata, active-run pointers, and requires explicit continuation after Worker rejection or revision decisions. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
+APCP v0.4.1 keeps the v0.2 state profiles, adds lightweight checker/tooling, expects root-goal, context-budget metadata, active-run pointers, Worker taxonomy/conflict-domain metadata, and requires explicit continuation after Worker rejection or revision decisions. The checker expects these headings to remain recognizable and tolerates extra project-specific sections.
 
 APCP supports two profiles:
 
@@ -189,7 +189,15 @@ For substantial work, always record:
 - `controllerContextPolicy`, normally reserving controller context for goal/DAG/acceptance;
 - `workerContextPolicy`, normally sizing delegated packages to finish within one Worker context window.
 
-Use **Worker** as the generic role in state. Record concrete Worker type when useful, e.g. `sub-agent`, `native-codex-cli`, `script`, `human-review`, or `browser-tool`.
+Use **Worker** as the generic role in state. Record the portable `workerType` when delegated work is active:
+
+- `implementation`
+- `validation`
+- `research`
+- `runtime-command`
+- `human-gate`
+
+Record the runtime identity separately, e.g. `runtimeWorkerKind: sub-agent | native-codex-cli | script | human-review | browser-tool`. When multiple Workers may be active, record `conflictDomain` so the controller can distinguish safe read-only parallelism from overlapping writes.
 
 ## Active-run pointer schema
 
@@ -206,6 +214,9 @@ Recommended fields:
 - projectHandoff:
 - rootGoal:
 - currentNode:
+- workerType:
+- runtimeWorkerKind:
+- conflictDomain:
 - workerLabel:
 - workerSessionKey:
 - workerRunId:
